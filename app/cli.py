@@ -7,8 +7,9 @@ Module that contains the special command line tools
 import os
 import click
 import csv
+from pathlib import Path
 from datetime import datetime
-from app.threads import UpdatePipelineData
+from app.threads import UpdatePipelineData, UpdateDatasets
 
 
 def register(app):
@@ -62,6 +63,16 @@ def register(app):
                     db.session.add(dataset_stat)
 
             db.session.commit()
+
+    @app.cli.command("update_datasets")
+    def update_datasets():
+        data_path = app.config.get("DATA_PATH", "static/data/projects").lstrip("/")
+        search_path = Path(app.root_path).joinpath(data_path)
+
+        thr = UpdateDatasets(search_path)
+
+        thr.start()
+        thr.join()
 
     @app.cli.command('update_pipeline_data')
     def update_pipeline_data():
